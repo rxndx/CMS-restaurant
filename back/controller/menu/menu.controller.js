@@ -1,6 +1,6 @@
 const AbstractController = require('../AbstractController');
 const MenuModel = require('../../model/menu/menu.model');
-const fs = require('fs'); // Для работы с файловой системой
+const fs = require('fs');
 
 class MenuController extends AbstractController {
     constructor() {

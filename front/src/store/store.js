@@ -5,8 +5,8 @@ import {
     catalogUrl,
     countryUrl,
     foodUrl,
-    menuUrl,
-    reviewsUrl,
+    menuUrl, productsUrl,
+    reviewsUrl, stockUrl,
     tagsFoodUrl,
     tagsMenuUrl,
     tagsUrl
@@ -21,6 +21,8 @@ export const catalogSlice = generateSlice('catalog', catalogUrl);
 export const catalogMenuSlice = generateSlice('catalogMenu', catalogMenuUrl);
 export const foodSlice = generateSlice('dishes', foodUrl)
 export const reviewSlice = generateSlice('reviews', reviewsUrl)
+export const stockSlice = generateSlice('stock', stockUrl)
+export const productsSlice = generateSlice('products', productsUrl)
 
 export const store = configureStore({
     reducer: {
@@ -32,6 +34,8 @@ export const store = configureStore({
         catalog: catalogSlice.reducer,
         catalogMenu: catalogMenuSlice.reducer,
         dishes: foodSlice.reducer,
-        reviews: reviewSlice.reducer
+        reviews: reviewSlice.reducer,
+        stock: stockSlice.reducer,
+        products: productsSlice.reducer
     },
 });

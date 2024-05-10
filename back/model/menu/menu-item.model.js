@@ -3,11 +3,11 @@ const db = require('../../db');
 class MenuItemModel {
     async create(itemData) {
         try {
-            const { menu_item_name, menu_item_content, id_menu, price } = itemData;
+            const { menu_item_name, menu_item_content, menu_item_image_path, id_menu, price } = itemData;
             const newItemMenu = await db.query(`
-                INSERT INTO "MENU_ITEM" (menu_item_name, menu_item_content, id_menu, price)
-                VALUES ($1, $2, $3, $4) RETURNING *
-            `, [menu_item_name, menu_item_content, id_menu, price]);
+                INSERT INTO "MENU_ITEM" (menu_item_name, menu_item_content, menu_item_image_path, id_menu, price)
+                VALUES ($1, $2, $3, $4, $5) RETURNING *
+            `, [menu_item_name, menu_item_content, menu_item_image_path, id_menu, price]);
             return newItemMenu.rows[0];
         } catch (error) {
             throw error;
@@ -34,12 +34,12 @@ class MenuItemModel {
 
     async update(itemData) {
         try {
-            const { menu_item_id, menu_item_name, menu_item_content, id_menu, price } = itemData;
+            const { menu_item_id, menu_item_name, menu_item_content, menu_item_image_path, id_menu, price } = itemData;
             const updatedItem = await db.query(`
-                UPDATE "MENU_ITEM" SET menu_item_name = $1, menu_item_content = $2, 
-                                       id_menu = $3, price = $4
-                WHERE menu_item_id = $5 RETURNING *
-            `, [menu_item_name, menu_item_content, id_menu, price, menu_item_id]);
+                UPDATE "MENU_ITEM" SET menu_item_name = $1, menu_item_content = $2, menu_item_image_path = $3,
+                                       id_menu = $4, price = $5
+                WHERE menu_item_id = $6 RETURNING *
+            `, [menu_item_name, menu_item_content, menu_item_image_path, id_menu, price, menu_item_id]);
             return updatedItem.rows[0];
         } catch (error) {
             throw error;

@@ -16,6 +16,7 @@ const MenuItemView = ({
                       }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
+    const [selectedMenuId, setSelectedMenuId] = useState(null);
     const dispatch = useDispatch();
 
     const handleDeleteMenu = () => {
@@ -32,8 +33,7 @@ const MenuItemView = ({
                         await dispatch(catalogMenuSlice.deleteItem(catalogMenuRelation.catalog_menu_id));
                     }
 
-                    await dispatch(menuSlice.deleteItem(menu.menu_id));
-                    dispatch(menuSlice.fetchItems());
+                    await dispatch(menuSlice.deleteItem(menu.menu_id)).then(r=> dispatch(menuSlice.fetchItems()));
                 } catch (error) {
                     console.error('Error deleting menu:', error.message);
                 }
@@ -55,8 +55,9 @@ const MenuItemView = ({
         catalogRelation &&
         catalogs.find((catalog) => catalog.catalog_id === catalogRelation.catalog_id);
 
-    const openModal = () => {
+    const openModal = (menuId) => {
         setModalVisible(true);
+        setSelectedMenuId(menuId);
     };
 
     const closeModal = () => {
@@ -119,12 +120,12 @@ const MenuItemView = ({
                 ))}
             </div>
             <Button
-                onClick={openModal}
+                onClick={() => openModal(menu.menu_id)}
                 style={{ marginTop: 10, backgroundColor: '#1890ff', color: 'white', border: 'none' }}
             >
                 Open dishes
             </Button>
-            {modalVisible && <DishesModal dishes={dishes} menuId={menu.menu_id} closeModal={closeModal} />}
+            {modalVisible && <DishesModal dishes={dishes} menuId={selectedMenuId} closeModal={closeModal} />}
             {editModalVisible && <MenuEditModal menu={menu} catalogs={catalogs} closeModal={closeEditModal} />}
         </Card>
     );
