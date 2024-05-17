@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Row, Col, Card, Rate, Collapse, Spin, Breadcrumb, Button, Modal, Checkbox } from 'antd';
-import {
-    productsSlice,
-    reviewSlice,
-    stockSlice,
-} from "../../store/store";
+import { Row, Col, Card, Rate, Collapse, Spin, Breadcrumb, Button, Modal, Select, Space } from 'antd';
+import { PlusCircleOutlined, MinusCircleOutlined } from '@ant-design/icons';
+import { productsSlice, reviewSlice, stockSlice } from "../../store/store";
 
 const { Panel } = Collapse;
+const { Option } = Select;
 
+// TODO: надо разбить класс и сделать его менее объёмным
 const DishesView = () => {
     const { dishId } = useParams();
     const dispatch = useDispatch();
@@ -18,7 +17,7 @@ const DishesView = () => {
     const [selectedDishId, setSelectedDishId] = useState(parseInt(dishId));
     const [otherDishes, setOtherDishes] = useState([]);
     const [dishIngredientsInfo, setDishIngredientsInfo] = useState([]);
-    const [selectedIngredients, setSelectedIngredients] = useState([]);
+    const [ingredientSelections, setIngredientSelections] = useState([{ id: 0, ingredient: null }]);
     const [modalVisible, setModalVisible] = useState(false);
 
     const reviews = useSelector((state) => state.reviews.list);
@@ -59,6 +58,8 @@ const DishesView = () => {
         if (selectedDishId && dishIngredients.length > 0) {
             const selectedDishIngredients = dishIngredients.find(dish => dish.menu_item_id === selectedDishId);
             setDishIngredientsInfo(selectedDishIngredients ? selectedDishIngredients.products : []);
+            const initialIngredients = selectedDishIngredients ? selectedDishIngredients.products.map(prod => ({ id: prod.product_id, ingredient: prod })) : [];
+            setIngredientSelections(initialIngredients);
         }
     }, [selectedDishId, dishIngredients]);
 
@@ -66,24 +67,55 @@ const DishesView = () => {
         setSelectedDishId(dishId);
     };
 
-    const handleIngredientChange = (ingredientId, checked) => {
-        if (checked) {
-            setSelectedIngredients([...selectedIngredients, ingredientId]);
-        } else {
-            setSelectedIngredients(selectedIngredients.filter(id => id !== ingredientId));
+    const handleIngredientChange = (index, selectedIngredient) => {
+        setIngredientSelections(prevState => {
+            const updatedSelections = [...prevState];
+            updatedSelections[index] = { id: index, ingredient: selectedIngredient };
+            return updatedSelections;
+        });
+    };
+
+    const handleAddIngredient = () => {
+        setIngredientSelections(prevState => {
+            const newIndex = prevState.length;
+            return [...prevState, { id: newIndex, ingredient: null }];
+        });
+    };
+
+    const handleRemoveIngredient = (index) => {
+        const ingredientToRemove = ingredientSelections[index];
+        if (ingredientToRemove.ingredient) {
+            const { product_id } = ingredientToRemove.ingredient;
+            dispatch(productsSlice.deleteItem(product_id)).then(r => dispatch(productsSlice.fetchItems()));
         }
+        setIngredientSelections(prevState => prevState.filter((_, i) => i !== index));
+    };
+
+    const updateDishIngredients = async () => {
+        await Promise.all(ingredientSelections.map(async ({ ingredient }) => {
+            if (ingredient) {
+                const existingIngredient = dishIngredientsInfo.find(ing => ing.product_id === ingredient.product_id);
+                const newDish = {
+                    id_stock: ingredient.stock_id,
+                    id_item_menu: selectedDishId
+                };
+                await dispatch(productsSlice.createItem(newDish));
+            }
+        })).then(() => dispatch(productsSlice.fetchItems()));
     };
 
     const handleSave = async () => {
-        await Promise.all(selectedIngredients.map(async (ingredientId) => {
-            const newDish = {
-                id_stock: ingredientId,
-                id_item_menu: selectedDishId
-            };
-            await dispatch(productsSlice.createItem(newDish));
-        })).then(r => dispatch(productsSlice.fetchItems()));
-
+        if (ingredientSelections.some(({ ingredient }) => ingredient)) {
+            await updateDishIngredients();
+        }
         setModalVisible(false);
+    };
+
+    const handleModalOpen = () => {
+        if (dishIngredientsInfo.length === 0) {
+            setIngredientSelections([{ id: 0, ingredient: null }]);
+        }
+        setModalVisible(true);
     };
 
     return (
@@ -104,7 +136,7 @@ const DishesView = () => {
                         <h3>{dish && dish.menu_item_name}</h3>
                         <p>{dish && dish.menu_item_content}</p>
                         <p>Price: {dish && dish.price}</p>
-                        <Button type="primary" onClick={() => setModalVisible(true)}>Edit Ingredients</Button>
+                        <Button type="primary" onClick={handleModalOpen}>Edit Ingredients</Button>
                     </Card>
                     {dishIngredientsInfo.length > 0 && (
                         <Row>
@@ -163,10 +195,32 @@ const DishesView = () => {
                 onOk={handleSave}
                 onCancel={() => setModalVisible(false)}
             >
-                {stock.map(ingredient => (
-                    <Checkbox key={ingredient.stock_id} onChange={(e) => handleIngredientChange(ingredient.stock_id, e.target.checked)}>
-                        {ingredient.product_name}
-                    </Checkbox>
+                {ingredientSelections.map(({ id, ingredient }, index) => (
+                    <Row key={id} style={{ marginBottom: '10px' }}>
+                        <Col span={20}>
+                            <Select
+                                style={{ width: '100%' }}
+                                placeholder="Select ingredient"
+                                value={ingredient ? ingredient.product_name : undefined}
+                                onChange={(value) => {
+                                    const selectedIngredient = stock.find(ing => ing.product_name === value);
+                                    handleIngredientChange(index, selectedIngredient);
+                                }}
+                            >
+                                {stock.map(ingredient => (
+                                    <Option key={ingredient.stock_id} value={ingredient.product_name}>{ingredient.product_name}</Option>
+                                ))}
+                            </Select>
+                        </Col>
+                        <Col span={4}>
+                            <Space>
+                                {index === ingredientSelections.length - 1 && (
+                                    <PlusCircleOutlined onClick={handleAddIngredient} style={{ fontSize: '20px', color: '#1890ff' }} />
+                                )}
+                                <MinusCircleOutlined onClick={() => handleRemoveIngredient(index)} style={{ fontSize: '20px', color: '#ff4d4f' }} />
+                            </Space>
+                        </Col>
+                    </Row>
                 ))}
             </Modal>
         </Spin>
