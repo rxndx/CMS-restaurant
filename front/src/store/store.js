@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import generateSlice from '../store/reducer';
 import {
+    blockUrl,
+    brandUrl,
     catalogMenuUrl,
     catalogUrl,
-    countryUrl,
+    countryUrl, designUrl,
     foodUrl,
     menuUrl, productsUrl,
     reviewsUrl, stockUrl,
@@ -23,10 +25,16 @@ export const foodSlice = generateSlice('dishes', foodUrl)
 export const reviewSlice = generateSlice('reviews', reviewsUrl)
 export const stockSlice = generateSlice('stock', stockUrl)
 export const productsSlice = generateSlice('products', productsUrl)
+export const blockSlice = generateSlice('blocks', blockUrl)
+export const brandSlice = generateSlice('brand', brandUrl)
+export const designSlice = generateSlice('design', designUrl)
 
 export const store = configureStore({
     reducer: {
         menus: menuSlice.reducer,
+        brand: brandSlice.reducer,
+        blocks: blockSlice.reducer,
+        design: designSlice.reducer,
         tags: tagSlice.reducer,
         tagsFood: tagFoodSlice.reducer,
         tagsMenu: tagMenuSlice.reducer,

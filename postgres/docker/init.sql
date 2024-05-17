@@ -64,6 +64,7 @@ CREATE ROLE operator WITH
 -- Sequences for all tables
 
 CREATE SEQUENCE "DESIGN_design_id_seq" START 1;
+CREATE SEQUENCE "BLOCK_block_id_seq" START 1;
 CREATE SEQUENCE "BRAND_brand_id_seq" START 1;
 CREATE SEQUENCE "ACCOUNT_account_id_seq" START 1;
 CREATE SEQUENCE "COUNTRY_country_id_seq" START 1;
@@ -116,6 +117,24 @@ CREATE TABLE IF NOT EXISTS public."BRAND"
     TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public."BRAND"
+    OWNER to postgres;
+
+CREATE TABLE IF NOT EXISTS public."BLOCK"
+(
+    block_id integer NOT NULL DEFAULT nextval('"BLOCK_block_id_seq"'::regclass),
+    id_brand integer NOT NULL,
+    type character varying COLLATE pg_catalog."default" NOT NULL, -- type blocks (image or text)
+    position JSONB NOT NULL, -- position of block by x,y
+    content_path character varying COLLATE pg_catalog."default" NOT NULL, -- content of block (path to image)
+    content_info character varying COLLATE pg_catalog."default" NOT NULL, -- content of block (text information)
+    CONSTRAINT "BLOCK_pkey" PRIMARY KEY (block_id),
+    CONSTRAINT "BLOCK_id_brand_fkey" FOREIGN KEY (id_brand)
+    REFERENCES public."BRAND" (brand_id) MATCH SIMPLE
+)
+
+    TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public."BLOCK"
     OWNER to postgres;
 
 -- 3# Table: public.ACCOUNT
@@ -503,8 +522,8 @@ ALTER TABLE IF EXISTS public."CATALOG_MENU"
 
 INSERT INTO public."DESIGN" (design_type, file_path)
 VALUES
-    ('1', 'Путь_к_тестовому_дизайну_1'),
-    ('2', 'Путь_к_тестовому_дизайну_2');
+    ('1', 'template1.js'),
+    ('2', 'template2.js');
 
 -- 2# Table: public.BRAND
 
