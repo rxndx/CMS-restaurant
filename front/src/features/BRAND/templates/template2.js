@@ -10,7 +10,6 @@ const { Meta } = Card;
 const Template2 = () => {
     return (
         <Layout className="layout">
-            <Navigation />
             <Content style={{ padding: '0 50px' }}>
                 <div className="site-layout-content">
                     <Carousel autoplay>
@@ -76,7 +75,6 @@ const Template2 = () => {
                     </Row>
                 </div>
             </Content>
-            <Footer />
         </Layout>
     );
 };

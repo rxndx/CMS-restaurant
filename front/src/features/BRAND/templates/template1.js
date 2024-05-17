@@ -10,7 +10,6 @@ const { Meta } = Card;
 const Template1 = () => {
     return (
         <Layout className="layout">
-            <Navigation />
             <Content style={{ padding: '0 50px' }}>
                 <Breadcrumb style={{ margin: '16px 0' }}>
                     <Breadcrumb.Item>Home</Breadcrumb.Item>
@@ -54,7 +53,6 @@ const Template1 = () => {
                     </Row>
                 </div>
             </Content>
-            <Footer />
         </Layout>
     );
 };
